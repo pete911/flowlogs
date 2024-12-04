@@ -1,0 +1,45 @@
+builds:
+  - env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+      - windows
+      - darwin
+    goarch:
+      - amd64
+      - arm64
+    ldflags:
+      - -X main.Version={{.Version}}
+
+archives:
+  - format: tar.gz
+    format_overrides:
+    - goos: windows
+      format: zip
+checksum:
+  name_template: 'checksums.txt'
+snapshot:
+  name_template: "{{ incpatch .Version }}-next"
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - '^docs:'
+      - '^test:'
+release:
+  github:
+    owner: pete911
+    name: flowlogs
+brews:
+  - repository:
+      owner: pete911
+      name: homebrew-tap
+      token: "{{ .Env.GITHUB_TOKEN }}"
+    name: flowlogs
+    homepage: "https://github.com/pete911/flowlogs"
+    description: "Create and view AWS FlowLogs."
+    directory: Formula
+    install: |
+      bin.install "flowlogs"
+    test: |
+      assert_match /Usage/, shell_output("#{bin}/flowlogs -h", 0)

@@ -1,8 +1,8 @@
-package fields
+package query
 
 import "strconv"
 
-func toTcpFlagNames(in string) []string {
+func ToTcpFlagNames(in string) []string {
 	// tcp flags do not have to be set, do not return error
 	if in == "-" || in == "" {
 		return nil

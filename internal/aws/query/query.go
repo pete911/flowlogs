@@ -1,81 +1,11 @@
-package fields
+package query
 
 import (
 	"fmt"
 	"strings"
 )
 
-// FlowLogFields - https://docs.aws.amazon.com/vpc/latest/userguide/flow-logs.html
-var FlowLogFields = []string{
-	"interface-id", "srcaddr", "dstaddr", "srcport", "dstport", "protocol", "packets", "bytes", "start", "end", // version 2 fields
-	"action", "log-status",
-	"vpc-id", "subnet-id", "instance-id", "tcp-flags", "type", "pkt-srcaddr", "pkt-dstaddr", // version 3 fields
-	"pkt-src-aws-service", "pkt-dst-aws-service", "flow-direction", "traffic-path", // version 5 fields
-	"ecs-cluster-arn", "ecs-cluster-name", "ecs-container-instance-arn", "ecs-container-instance-id", "ecs-container-id", // version 7 fields
-	"ecs-second-container-id", "ecs-service-name", "ecs-task-definition-arn", "ecs-task-arn", "ecs-task-id",
-}
-
-var QueryFields = QueryFieldItems{
-	{name: "@timestamp", header: "TIME"},
-	{name: "flowDirection", header: "FLOW"},
-	{name: "action", header: "ACTION"},
-	{name: "packets", header: "PACKETS"},
-	{name: "bytes", header: "BYTES"},
-	{name: "protocol", header: "PROTOCOL"},
-	{name: "srcAddr", header: "SRC ADDR"},
-	{name: "pktSrcAddr", header: "PKT SRC ADDR"},
-	{name: "srcPort", header: "SRC PORT"},
-	{name: "dstAddr", header: "DST ADDR"},
-	{name: "pktDstAddr", header: "PKT DST ADDR"},
-	{name: "dstPort", header: "DST PORT"},
-	{name: "tcpFlags", header: "TCP FLAGS"},
-}
-
-type QueryFieldItem struct {
-	name   string
-	header string
-}
-
-type QueryFieldItems []QueryFieldItem
-
-func (f QueryFieldItems) names() []string {
-	var out []string
-	for _, v := range f {
-		out = append(out, v.name)
-	}
-	return out
-}
-
-func (f QueryFieldItems) Header() []string {
-	var out []string
-	for _, v := range f {
-		out = append(out, v.header)
-	}
-	return out
-}
-
-func (f QueryFieldItems) Values(in []map[string]string) [][]string {
-	var rows [][]string
-	for _, row := range in {
-		var columns []string
-		for _, fieldName := range f.names() {
-			column := row[fieldName]
-			if fieldName == "tcpFlags" {
-				column = strings.Join(toTcpFlagNames(column), ", ")
-			}
-			if fieldName == "protocol" {
-				column = toProtocol(column).keyword
-			}
-			if fieldName == "trafficPath" {
-				column = toPathName(column)
-			}
-			columns = append(columns, column)
-		}
-		rows = append(rows, columns)
-	}
-	return rows
-}
-
+// Query is request to query cloud watch flow logs
 type Query struct {
 	query        []string
 	limit        int
@@ -84,9 +14,33 @@ type Query struct {
 
 func NewQuery(limit, sinceMinutes int) Query {
 	return Query{
-		query:        []string{fmt.Sprintf("fields %s", strings.Join(QueryFields.names(), ", "))},
+		query:        []string{fmt.Sprintf("fields %s", strings.Join(Fields, ", "))},
 		limit:        limit,
 		sinceMinutes: sinceMinutes,
+	}
+}
+
+func (q Query) NoNoData() Query {
+	return Query{
+		query:        append(q.query, `| filter (logStatus != "NODATA"`),
+		limit:        q.limit,
+		sinceMinutes: q.sinceMinutes,
+	}
+}
+
+func (q Query) NoSkipData() Query {
+	return Query{
+		query:        append(q.query, `| filter (logStatus != "SKIPDATA"`),
+		limit:        q.limit,
+		sinceMinutes: q.sinceMinutes,
+	}
+}
+
+func (q Query) InterfaceId(id string) Query {
+	return Query{
+		query:        append(q.query, fmt.Sprintf(`| filter (interfaceId == "%s"`, id)),
+		limit:        q.limit,
+		sinceMinutes: q.sinceMinutes,
 	}
 }
 

@@ -1,15 +1,17 @@
 package flag
 
 import (
-	"github.com/pete911/flowlogs/internal/aws/fields"
+	"github.com/pete911/flowlogs/internal/aws/query"
 	"github.com/spf13/cobra"
 )
 
 var Query QueryFlags
 
 type QueryFlags struct {
+	Pretty       bool
 	limit        int
 	sinceMinutes int
+	niId         string
 	protocol     string
 	ingress      bool
 	egress       bool
@@ -25,51 +27,61 @@ type QueryFlags struct {
 	pktDstAddr   string
 }
 
-func (q QueryFlags) GetQuery() fields.Query {
-	query := fields.NewQuery(q.limit, q.sinceMinutes)
-	if q.protocol != "" {
-		query = query.Protocol(q.protocol)
+func (f QueryFlags) GetQuery() query.Query {
+	q := query.NewQuery(f.limit, f.sinceMinutes)
+	q = q.NoNoData().NoSkipData()
+	if f.niId != "" {
+		q = q.InterfaceId(f.niId)
 	}
-	if q.egress {
-		query = query.Egress()
+	if f.protocol != "" {
+		q = q.Protocol(f.protocol)
 	}
-	if q.ingress {
-		query = query.Ingress()
+	if f.egress {
+		q = q.Egress()
 	}
-	if q.accept {
-		query = query.Accept()
+	if f.ingress {
+		q = q.Ingress()
 	}
-	if q.reject {
-		query = query.Reject()
+	if f.accept {
+		q = q.Accept()
 	}
-	if q.port > -1 {
-		query = query.Port(q.port)
+	if f.reject {
+		q = q.Reject()
 	}
-	if q.addr != "" {
-		query = query.Address(q.addr)
+	if f.port > -1 {
+		q = q.Port(f.port)
 	}
-	if q.srcPort > -1 {
-		query = query.SourcePort(q.srcPort)
+	if f.addr != "" {
+		q = q.Address(f.addr)
 	}
-	if q.srcAddr != "" {
-		query = query.SourceAddress(q.srcAddr)
+	if f.srcPort > -1 {
+		q = q.SourcePort(f.srcPort)
 	}
-	if q.pktSrcAddr != "" {
-		query = query.PktSourceAddress(q.pktSrcAddr)
+	if f.srcAddr != "" {
+		q = q.SourceAddress(f.srcAddr)
 	}
-	if q.dstPort > -1 {
-		query = query.DestinationPort(q.dstPort)
+	if f.pktSrcAddr != "" {
+		q = q.PktSourceAddress(f.pktSrcAddr)
 	}
-	if q.dstAddr != "" {
-		query = query.DestinationAddress(q.dstAddr)
+	if f.dstPort > -1 {
+		q = q.DestinationPort(f.dstPort)
 	}
-	if q.pktDstAddr != "" {
-		query = query.PktDestinationAddress(q.pktDstAddr)
+	if f.dstAddr != "" {
+		q = q.DestinationAddress(f.dstAddr)
 	}
-	return query.Sort()
+	if f.pktDstAddr != "" {
+		q = q.PktDestinationAddress(f.pktDstAddr)
+	}
+	return q.Sort()
 }
 
 func InitPersistentQueryFlags(cmd *cobra.Command, flags *QueryFlags) {
+	cmd.PersistentFlags().BoolVar(
+		&flags.Pretty,
+		"pretty",
+		getBoolEnv("PRETTY", false),
+		"whether to enhance flow logs with names",
+	)
 	cmd.PersistentFlags().IntVar(
 		&flags.limit,
 		"limit",
@@ -81,6 +93,12 @@ func InitPersistentQueryFlags(cmd *cobra.Command, flags *QueryFlags) {
 		"minutes",
 		getIntEnv("MINUTES", 60),
 		"minutes 'ago' to search logs",
+	)
+	cmd.PersistentFlags().StringVar(
+		&flags.niId,
+		"ni-id",
+		getStringEnv("NI_ID", ""),
+		"network interface id",
 	)
 	cmd.PersistentFlags().StringVar(
 		&flags.protocol,

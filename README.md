@@ -18,17 +18,17 @@ If you have multiple accounts you need to prefix command with `AWS_PROFILE=<your
 
 ```
 flowlogs create vpc
-
+# wait couple of minute for AWS to aggregate flow logs
 flowlogs query vpc
-TIME                     FLOW     ACTION  PACKETS  BYTES    PROTOCOL  SRC ADDR  PKT SRC ADDR  SRC PORT  DST ADDR  PKT DST ADDR  DST PORT  TCP FLAGS
-2029-02-04 12:13:13.000  egress   ACCEPT  4        216      TCP       10.0.0.0  10.0.0.0      30572     10.0.0.1  10.0.0.1      6379      FIN, SYN
-2029-02-04 12:13:06.000  egress   ACCEPT  4        216      TCP       10.0.0.0  10.0.0.0      25023     10.0.0.1  10.0.0.1      6379      FIN, SYN
-2029-02-04 12:12:47.000  ingress  ACCEPT  2        160      TCP       10.0.0.1  10.0.0.1      6379      10.0.0.0  10.0.0.0      24444     FIN, SYN, ACK
-2029-02-04 12:12:47.000  ingress  ACCEPT  2        160      TCP       10.0.0.1  10.0.0.1      6379      10.0.0.0  10.0.0.0      25259     FIN, SYN, ACK
-2029-02-04 12:12:29.000  ingress  ACCEPT  4        216      TCP       10.0.0.0  10.0.0.0      11308     10.0.0.1  10.0.0.1      6379      FIN, SYN
-2029-02-04 12:12:29.000  egress   ACCEPT  329      2368184  TCP       10.0.0.1  10.0.0.1      6379      10.0.0.0  10.0.0.0      36493     ACK
+TIME      NI ID                  NI ADDRESS  NI PORT  FLOW        ADDRESS          PORT   ACTION  PACKETS  BYTES  PROTOCOL  TCP FLAGS      TRAFFIC PATH
+21:43:55  eni-xxxxxxxxxxxxxxxxx  10.0.0.1    8075     <-ingress-  147.185.133.190  55053  REJECT  1        44     TCP       SYN            
+21:43:55  eni-xxxxxxxxxxxxxxxxx  10.0.0.1    22       -egress-->  103.55.49.10     41360  ACCEPT  4        240    TCP       SYN, ACK       internet gateway
+21:42:54  eni-xxxxxxxxxxxxxxxxx  10.0.0.1    23       <-ingress-  211.143.253.166  29207  REJECT  1        40     TCP       SYN            
+21:42:54  eni-xxxxxxxxxxxxxxxxx  10.0.0.1    17933    <-ingress-  83.222.191.42    61000  REJECT  1        40     TCP       SYN            
 ...
 ```
+
+Use `--pretty` flag to add network interface type and name columns.
 
 **Available query flags**
  ```
@@ -40,9 +40,11 @@ TIME                     FLOW     ACTION  PACKETS  BYTES    PROTOCOL  SRC ADDR  
 --ingress               ingress flow logs
 --limit int             number of returned results (default 100)
 --minutes int           minutes 'ago' to search logs (default 60)
+--ni-id string          network interface id
 --pkt-dst-addr string   packet destination address
 --pkt-src-addr string   packet source address
 --port int              port - source or destination, negative value means all ports (default -1)
+--pretty                whether to enhance flow logs with names
 --protocol string       protocol
 --reject                rejected traffic
 --src-addr string       source address

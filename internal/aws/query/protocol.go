@@ -1,4 +1,4 @@
-package fields
+package query
 
 import (
 	"fmt"
@@ -19,6 +19,10 @@ func fromProtocol(in string) int {
 		}
 	}
 	return -1
+}
+
+func ToProtocolKeyword(in any) string {
+	return toProtocol(in).keyword
 }
 
 func toProtocol(in any) protocol {

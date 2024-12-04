@@ -4,9 +4,9 @@ import (
 	"errors"
 	"fmt"
 	"github.com/pete911/flowlogs/internal/aws/ec2"
-	"github.com/pete911/flowlogs/internal/aws/fields"
 	"github.com/pete911/flowlogs/internal/aws/iam"
 	"github.com/pete911/flowlogs/internal/aws/logs"
+	"github.com/pete911/flowlogs/internal/aws/query"
 	"log/slog"
 )
 
@@ -161,7 +161,7 @@ func (c Client) createLogGroupAndRole(id string, tags map[string]string) (string
 }
 
 // QueryFlowLogs run query on specified flow logs
-func (c Client) QueryFlowLogs(flowLogs ec2.FlowLogs, query fields.Query) ([]map[string]string, error) {
+func (c Client) QueryFlowLogs(flowLogs ec2.FlowLogs, query query.Query) ([]map[string]string, error) {
 	if len(flowLogs) == 0 {
 		c.logger.Info("no flow logs provided, nothing to query")
 		return nil, nil
@@ -172,6 +172,10 @@ func (c Client) QueryFlowLogs(flowLogs ec2.FlowLogs, query fields.Query) ([]map[
 		logGroupNames = append(logGroupNames, logGroupNameFromFlowLogName(v.Name))
 	}
 	return c.logsClient.Query(logGroupNames, query.GetQuery(), query.GetSinceMinutes(), query.GetLimit())
+}
+
+func (c Client) ListNetworkInterfaces() (ec2.NetworkInterfaces, error) {
+	return c.ec2client.ListNetworkInterfaces()
 }
 
 // DeleteResources delete flow logs, IAM roles and cloud watch log groups

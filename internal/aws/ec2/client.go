@@ -6,7 +6,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/ec2"
 	"github.com/aws/aws-sdk-go-v2/service/ec2/types"
-	"github.com/pete911/flowlogs/internal/aws/fields"
+	"github.com/pete911/flowlogs/internal/aws/query"
 	"log/slog"
 	"strings"
 	"time"
@@ -232,7 +232,7 @@ func (c createFlowLogsInput) toInput() *ec2.CreateFlowLogsInput {
 	return &ec2.CreateFlowLogsInput{
 		ResourceIds:              c.resourceIds,
 		ResourceType:             c.resourceType,
-		LogFormat:                aws.String(toLogFormat(fields.FlowLogFields)),
+		LogFormat:                aws.String(toLogFormat(query.FlowLogFields)),
 		LogGroupName:             aws.String(c.logGroupName),
 		LogDestinationType:       types.LogDestinationTypeCloudWatchLogs,
 		DeliverLogsPermissionArn: aws.String(c.roleArn),
@@ -314,31 +314,46 @@ func (c Client) DeleteFlowLogs(flowLogIds []string) error {
 }
 
 func (c Client) ListSecurityGroupNetworkInterfaceIds(securityGroup SecurityGroup) ([]string, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
-
 	filters := []types.Filter{
 		{Name: aws.String("vpc-id"), Values: []string{securityGroup.VpcId}},
 		{Name: aws.String("group-id"), Values: []string{securityGroup.Id}},
 	}
 
+	nis, err := c.describeNetworkInterfaces(filters)
+	if err != nil {
+		return nil, fmt.Errorf("list network interfaces for %s security group: %w", securityGroup.Id, err)
+	}
+
+	var ids []string
+	for _, ni := range nis {
+		ids = append(ids, ni.NetworkInterfaceId)
+	}
+	return ids, nil
+}
+
+func (c Client) ListNetworkInterfaces() (NetworkInterfaces, error) {
+	return c.describeNetworkInterfaces(nil)
+}
+
+func (c Client) describeNetworkInterfaces(filters []types.Filter) (NetworkInterfaces, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
 	in := &ec2.DescribeNetworkInterfacesInput{Filters: filters}
 
-	var eniIds []string
+	var networkInterfaces NetworkInterfaces
 	for {
 		out, err := c.svc.DescribeNetworkInterfaces(ctx, in)
 		if err != nil {
-			return nil, fmt.Errorf("describe %s security group network interfaces: %w", securityGroup.Id, err)
+			return nil, fmt.Errorf("describe network interfaces: %w", err)
 		}
-		for _, eni := range out.NetworkInterfaces {
-			eniIds = append(eniIds, aws.ToString(eni.NetworkInterfaceId))
-		}
+		networkInterfaces = append(networkInterfaces, ToNetworkInterfaces(out.NetworkInterfaces)...)
 		if aws.ToString(out.NextToken) == "" {
 			break
 		}
 		in.NextToken = out.NextToken
 	}
-	return eniIds, nil
+	return networkInterfaces, nil
 }
 
 func fromTags(in map[string]string) []types.Tag {

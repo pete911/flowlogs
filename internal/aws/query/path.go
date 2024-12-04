@@ -1,4 +1,4 @@
-package fields
+package query
 
 import (
 	"strconv"
@@ -15,8 +15,8 @@ var pathNameByNumber = map[int]string{
 	8: "internet gateway", // nitro-based instances only
 }
 
-// toPathName takes traffic-path flow log field and return name representation. This applies only to egress traffic
-func toPathName(in string) string {
+// ToPathName takes traffic-path flow log field and return name representation. This applies only to egress traffic
+func ToPathName(in string) string {
 	if in == "-" || in == "" {
 		return ""
 	}

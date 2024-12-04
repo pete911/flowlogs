@@ -20,11 +20,11 @@ If you have multiple accounts you need to prefix command with `AWS_PROFILE=<your
 flowlogs create vpc
 # wait couple of minute for AWS to aggregate flow logs
 flowlogs query vpc
-TIME      NI ID                  NI ADDRESS  NI PORT  FLOW        ADDRESS          PORT   ACTION  PACKETS  BYTES  PROTOCOL  TCP FLAGS      TRAFFIC PATH
-21:43:55  eni-xxxxxxxxxxxxxxxxx  10.0.0.1    8075     <-ingress-  147.185.133.190  55053  REJECT  1        44     TCP       SYN            
-21:43:55  eni-xxxxxxxxxxxxxxxxx  10.0.0.1    22       -egress-->  103.55.49.10     41360  ACCEPT  4        240    TCP       SYN, ACK       internet gateway
-21:42:54  eni-xxxxxxxxxxxxxxxxx  10.0.0.1    23       <-ingress-  211.143.253.166  29207  REJECT  1        40     TCP       SYN            
-21:42:54  eni-xxxxxxxxxxxxxxxxx  10.0.0.1    17933    <-ingress-  83.222.191.42    61000  REJECT  1        40     TCP       SYN            
+TIME      NI ID                  NI ADDRESS  NI PORT  FLOW        ADDRESS          PORT   ACTION  PACKETS  BYTES  PROTOCOL  TCP FLAGS  TRAFFIC PATH
+21:43:55  eni-xxxxxxxxxxxxxxxxx  10.0.0.1    8075     <-ingress-  147.185.133.190  55053  REJECT  1        44     TCP       SYN        
+21:43:55  eni-xxxxxxxxxxxxxxxxx  10.0.0.1    22       -egress-->  103.55.49.10     41360  ACCEPT  4        240    TCP       SYN, ACK   internet gateway
+21:42:54  eni-xxxxxxxxxxxxxxxxx  10.0.0.1    23       <-ingress-  211.143.253.166  29207  REJECT  1        40     TCP       SYN        
+21:42:54  eni-xxxxxxxxxxxxxxxxx  10.0.0.1    17933    <-ingress-  83.222.191.42    61000  REJECT  1        40     TCP       SYN        
 ...
 ```
 

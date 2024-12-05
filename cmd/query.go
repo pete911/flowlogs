@@ -113,23 +113,9 @@ func printQuery(logger *slog.Logger, logs []map[string]string) {
 	table := out.NewTable(logger, os.Stdout)
 	table.AddRow("TIME", "NI ID", "NI ADDRESS", "NI PORT", "FLOW", "ADDRESS", "PORT", "ACTION", "PACKETS", "BYTES", "PROTOCOL", "TCP FLAGS", "TRAFFIC PATH")
 	for _, row := range logs {
-		var flow, niAddr, niPort, addr, port string
-		if row["flowDirection"] == "ingress" {
-			flow = "<-ingress-"
-			niAddr = row["dstAddr"]
-			niPort = row["dstPort"]
-			addr = row["srcAddr"]
-			port = row["srcPort"]
-		}
-		if row["flowDirection"] == "egress" {
-			flow = "-egress-->"
-			niAddr = row["srcAddr"]
-			niPort = row["srcPort"]
-			addr = row["dstAddr"]
-			port = row["dstPort"]
-		}
+		flow := ToFlow(row)
 		table.AddRow(
-			query.ToTime(row["@timestamp"]), row["interfaceId"], niAddr, niPort, flow, addr, port, row["action"],
+			query.ToTime(row["@timestamp"]), row["interfaceId"], flow.NiAddr, flow.NiPort, flow.Flow, flow.Addr, flow.Port, row["action"],
 			row["packets"], row["bytes"], query.ToProtocolKeyword(row["protocol"]),
 			strings.Join(query.ToTcpFlagNames(row["tcpFlags"]), ", "),
 			query.ToPathName(row["trafficPath"]),
@@ -142,22 +128,7 @@ func prettyPrintQuery(logger *slog.Logger, logs []map[string]string, interfaces 
 	table := out.NewTable(logger, os.Stdout)
 	table.AddRow("TIME", "NI ID", "TYPE", "NAME", "NI ADDRESS", "NI PORT", "FLOW", "ADDRESS", "PORT", "ACTION", "PACKETS", "BYTES", "PROTOCOL", "TCP FLAGS", "TRAFFIC PATH")
 	for _, row := range logs {
-		var flow, niAddr, niPort, addr, port string
-		if row["flowDirection"] == "ingress" {
-			flow = "<-ingress-"
-			niAddr = row["dstAddr"]
-			niPort = row["dstPort"]
-			addr = row["srcAddr"]
-			port = row["srcPort"]
-		}
-		if row["flowDirection"] == "egress" {
-			flow = "-egress-->"
-			niAddr = row["srcAddr"]
-			niPort = row["srcPort"]
-			addr = row["dstAddr"]
-			port = row["dstPort"]
-		}
-
+		flow := ToFlow(row)
 		ni := interfaces.GetById(row["interfaceId"])
 		name := ni.Name
 		if ecsSvc := row["ecsServiceName"]; ecsSvc != "" {
@@ -165,11 +136,57 @@ func prettyPrintQuery(logger *slog.Logger, logs []map[string]string, interfaces 
 		}
 
 		table.AddRow(
-			query.ToTime(row["@timestamp"]), row["interfaceId"], ni.Type, name, niAddr, niPort, flow, addr, port, row["action"],
+			query.ToTime(row["@timestamp"]), row["interfaceId"], ni.Type, name, flow.NiAddr, flow.NiPort, flow.Flow, flow.Addr, flow.Port, row["action"],
 			row["packets"], row["bytes"], query.ToProtocolKeyword(row["protocol"]),
 			strings.Join(query.ToTcpFlagNames(row["tcpFlags"]), ", "),
 			query.ToPathName(row["trafficPath"]),
 		)
 	}
 	table.Print()
+}
+
+type Flow struct {
+	Flow   string
+	NiAddr string
+	NiPort string
+	Addr   string
+	Port   string
+}
+
+func ToFlow(in map[string]string) Flow {
+	if in["flowDirection"] == "ingress" {
+		niAddr := in["dstAddr"]
+		//if in["dstAddr"] != in["pktDstAddr"] {
+		//	niAddr = fmt.Sprintf("%s <- %s", in["pktDstAddr"], in["dstAddr"])
+		//}
+		addr := in["srcAddr"]
+		//if in["srcAddr"] != in["pktSrcAddr"] {
+		//	addr = fmt.Sprintf("%s <- %s", in["srcAddr"], in["pktSrcAddr"])
+		//}
+		return Flow{
+			Flow:   "<-ingress-",
+			NiAddr: niAddr,
+			NiPort: in["dstPort"],
+			Addr:   addr,
+			Port:   in["srcPort"],
+		}
+	}
+	if in["flowDirection"] == "egress" {
+		niAddr := in["srcAddr"]
+		//if in["srcAddr"] != in["pktSrcAddr"] {
+		//	niAddr = fmt.Sprintf("%s -> %s", in["srcAddr"], in["pktSrcAddr"])
+		//}
+		addr := in["dstAddr"]
+		//if in["dstAddr"] != in["pktDstAddr"] {
+		//	addr = fmt.Sprintf("%s -> %s", in["pktDstAddr"], in["dstAddr"])
+		//}
+		return Flow{
+			Flow:   "-egress-->",
+			NiAddr: niAddr,
+			NiPort: in["srcPort"],
+			Addr:   addr,
+			Port:   in["dstPort"],
+		}
+	}
+	return Flow{}
 }

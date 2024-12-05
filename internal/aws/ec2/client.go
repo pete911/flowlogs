@@ -2,10 +2,12 @@ package ec2
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/ec2"
 	"github.com/aws/aws-sdk-go-v2/service/ec2/types"
+	"github.com/aws/smithy-go"
 	"github.com/pete911/flowlogs/internal/aws/query"
 	"log/slog"
 	"strings"
@@ -57,7 +59,7 @@ func (c Client) CreateVPCFlowLogs(vpc VPC, logGroupName string, roleArn string, 
 		roleArn:      roleArn,
 		tags:         tags,
 	}
-	return c.createFlowLogs(in)
+	return c.createFlowLogsV2V7(in)
 }
 
 func (c Client) ListSubnets(ownerId, vpcId string) (Subnets, error) {
@@ -94,7 +96,7 @@ func (c Client) CreateSubnetFlowLogs(subnet Subnet, logGroupName string, roleArn
 		roleArn:      roleArn,
 		tags:         tags,
 	}
-	return c.createFlowLogs(in)
+	return c.createFlowLogsV2V7(in)
 }
 
 func (c Client) ListNatGateways(vpcId string) (NatGateways, error) {
@@ -132,7 +134,7 @@ func (c Client) CreateNatGatewayFlowLogs(natGateway NatGateway, logGroupName str
 		roleArn:      roleArn,
 		tags:         tags,
 	}
-	return c.createFlowLogs(in)
+	return c.createFlowLogsV2V7(in)
 }
 
 func (c Client) ListSecurityGroups(ownerId, vpcId string) (SecurityGroups, error) {
@@ -174,7 +176,7 @@ func (c Client) CreateSecurityGroupFlowLogs(securityGroup SecurityGroup, logGrou
 		roleArn:      roleArn,
 		tags:         tags,
 	}
-	return c.createFlowLogs(in)
+	return c.createFlowLogsV2V7(in)
 }
 
 func (c Client) ListInstances(vpcId string) (Instances, error) {
@@ -217,7 +219,7 @@ func (c Client) CreateInstancesFlowLogs(instances Instances, logGroupName string
 		roleArn:      roleArn,
 		tags:         tags,
 	}
-	return c.createFlowLogs(in)
+	return c.createFlowLogsV2V7(in)
 }
 
 type createFlowLogsInput struct {
@@ -228,11 +230,11 @@ type createFlowLogsInput struct {
 	tags         map[string]string
 }
 
-func (c createFlowLogsInput) toInput() *ec2.CreateFlowLogsInput {
+func (c createFlowLogsInput) toInput(logFormat query.FlowLogFields) *ec2.CreateFlowLogsInput {
 	return &ec2.CreateFlowLogsInput{
 		ResourceIds:              c.resourceIds,
 		ResourceType:             c.resourceType,
-		LogFormat:                aws.String(toLogFormat(query.FlowLogFields)),
+		LogFormat:                aws.String(logFormat.Format()),
 		LogGroupName:             aws.String(c.logGroupName),
 		LogDestinationType:       types.LogDestinationTypeCloudWatchLogs,
 		DeliverLogsPermissionArn: aws.String(c.roleArn),
@@ -246,11 +248,32 @@ func (c createFlowLogsInput) toInput() *ec2.CreateFlowLogsInput {
 	}
 }
 
-func (c Client) createFlowLogs(in createFlowLogsInput) error {
+func (c Client) createFlowLogsV2V7(in createFlowLogsInput) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	if _, err := c.svc.CreateFlowLogs(ctx, in.toInput()); err != nil {
+	// try to create flow logs with V7 (ECS) fields
+	params := in.toInput(append(query.FlowLogFieldsV2V5, query.FlowLogFieldsV7...))
+	if _, err := c.svc.CreateFlowLogs(ctx, params); err != nil {
+		var apiErr smithy.APIError
+		if ok := errors.As(err, &apiErr); ok {
+			// full message is: Caller is not authorized to obtain ECS field(s). Failed with error: {A minimum of 1 ECS Cluster is required to Create Flow Logs with ECS Fields}
+			// create flow logs without V7 fields (ECS)
+			if strings.HasPrefix(apiErr.ErrorMessage(), "Caller is not authorized to obtain ECS field(s).") {
+				return c.createFlowLogsV2V5(in)
+			}
+		}
+		return err
+	}
+	return nil
+}
+
+func (c Client) createFlowLogsV2V5(in createFlowLogsInput) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	params := in.toInput(query.FlowLogFieldsV2V5)
+	if _, err := c.svc.CreateFlowLogs(ctx, params); err != nil {
 		return err
 	}
 	return nil
@@ -365,12 +388,4 @@ func fromTags(in map[string]string) []types.Tag {
 		})
 	}
 	return out
-}
-
-func toLogFormat(logFields []string) string {
-	var logFormat []string
-	for _, v := range logFields {
-		logFormat = append(logFormat, fmt.Sprintf("${%s}", v))
-	}
-	return strings.Join(logFormat, " ")
 }

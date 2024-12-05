@@ -150,6 +150,10 @@ func getNiName(in types.NetworkInterface) string {
 		return strings.TrimPrefix(description, "ElastiCache+")
 	}
 
+	if strings.HasPrefix(description, "VPC Endpoint Interface ") {
+		return strings.TrimPrefix(description, "VPC Endpoint Interface ")
+	}
+
 	if strings.HasPrefix(description, "AWS Lambda VPC ENI-") {
 		nameWithSuffix := strings.TrimPrefix(description, "AWS Lambda VPC ENI-")
 		// remove xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx suffix

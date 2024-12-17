@@ -1,6 +1,6 @@
 module github.com/pete911/flowlogs
 
-go 1.23.3
+go 1.23.4
 
 require (
 	github.com/aws/aws-sdk-go-v2 v1.32.6
@@ -25,8 +25,8 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/internal/presigned-url v1.12.6 // indirect
 	github.com/aws/aws-sdk-go-v2/service/sso v1.24.7 // indirect
 	github.com/aws/aws-sdk-go-v2/service/ssooidc v1.28.6 // indirect
-	github.com/chzyer/readline v0.0.0-20180603132655-2972be24d48e // indirect
+	github.com/chzyer/readline v1.5.1 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
-	golang.org/x/sys v0.0.0-20181122145206-62eef0e2fa9b // indirect
+	golang.org/x/sys v0.28.0 // indirect
 )

@@ -134,9 +134,14 @@ func prettyPrintQuery(logger *slog.Logger, logs []map[string]string, interfaces 
 		if ecsSvc := row["ecsServiceName"]; ecsSvc != "" {
 			name = ecsSvc
 		}
+		niType := ni.Type
+		// most likely we are never going to see trunk, but just in case
+		if ni.InterfaceType == "branch" || ni.InterfaceType == "trunk" {
+			niType = fmt.Sprintf("%s (%s)", ni.Type, ni.InterfaceType)
+		}
 
 		table.AddRow(
-			query.ToTime(row["@timestamp"]), row["interfaceId"], ni.Type, name, flow.NiAddr, flow.NiPort, flow.Flow, flow.Addr, flow.Port, row["action"],
+			query.ToTime(row["@timestamp"]), row["interfaceId"], niType, name, flow.NiAddr, flow.NiPort, flow.Flow, flow.Addr, flow.Port, row["action"],
 			row["packets"], row["bytes"], query.ToProtocolKeyword(row["protocol"]),
 			strings.Join(query.ToTcpFlagNames(row["tcpFlags"]), ", "),
 			query.ToPathName(row["trafficPath"]),

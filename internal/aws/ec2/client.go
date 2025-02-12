@@ -26,14 +26,22 @@ func NewClient(logger *slog.Logger, cfg aws.Config) Client {
 	}
 }
 
-func (c Client) ListVPCs(ownerId string) (VPCs, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
+func (c Client) ListAllVPCs() (VPCs, error) {
+	return c.listVPCs(nil)
+}
 
+func (c Client) ListVPCs(ownerId string) (VPCs, error) {
 	filters := []types.Filter{
 		{Name: aws.String("state"), Values: []string{"available"}},
 		{Name: aws.String("owner-id"), Values: []string{ownerId}},
 	}
+	return c.listVPCs(filters)
+}
+
+func (c Client) listVPCs(filters []types.Filter) (VPCs, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
 	in := &ec2.DescribeVpcsInput{Filters: filters}
 
 	var vpcs VPCs
@@ -62,15 +70,23 @@ func (c Client) CreateVPCFlowLogs(vpc VPC, logGroupName string, roleArn string, 
 	return c.createFlowLogsV2V7(in)
 }
 
-func (c Client) ListSubnets(ownerId, vpcId string) (Subnets, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
+func (c Client) ListAllSubnets() (Subnets, error) {
+	return c.listSubnets(nil)
+}
 
+func (c Client) ListSubnets(ownerId, vpcId string) (Subnets, error) {
 	filters := []types.Filter{
 		{Name: aws.String("state"), Values: []string{"available"}},
 		{Name: aws.String("owner-id"), Values: []string{ownerId}},
 		{Name: aws.String("vpc-id"), Values: []string{vpcId}},
 	}
+	return c.listSubnets(filters)
+}
+
+func (c Client) listSubnets(filters []types.Filter) (Subnets, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
 	in := &ec2.DescribeSubnetsInput{Filters: filters}
 
 	var subnets Subnets

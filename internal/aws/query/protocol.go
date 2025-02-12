@@ -12,20 +12,23 @@ type protocol struct {
 	protocol string
 }
 
-func fromProtocol(in string) int {
+func protocolFromKeywordToNumber(in string) int {
 	for k, v := range protocolByNumber {
-		if strings.ToLower(v.protocol) == strings.ToLower(in) {
+		if strings.ToLower(v.keyword) == strings.ToLower(in) {
 			return k
 		}
 	}
 	return -1
 }
 
-func ToProtocolKeyword(in any) string {
-	return toProtocol(in).keyword
+func ProtocolFromNumberToKeyword(in string) string {
+	if v := toProtocol(in).keyword; v != "" {
+		return v
+	}
+	return in
 }
 
-func toProtocol(in any) protocol {
+func toProtocol(in string) protocol {
 	strVal := fmt.Sprintf("%s", in)
 	if strVal == "-" || strVal == "" {
 		return protocol{}

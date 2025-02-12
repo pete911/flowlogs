@@ -116,7 +116,7 @@ func printQuery(logger *slog.Logger, logs []map[string]string) {
 		flow := ToFlow(row)
 		table.AddRow(
 			query.ToTime(row["@timestamp"]), row["interfaceId"], flow.NiAddr, flow.NiPort, flow.Flow, flow.Addr, flow.Port, row["action"],
-			row["packets"], row["bytes"], query.ToProtocolKeyword(row["protocol"]),
+			row["packets"], row["bytes"], query.ProtocolFromNumberToKeyword(row["protocol"]),
 			strings.Join(query.ToTcpFlagNames(row["tcpFlags"]), ", "),
 			query.ToPathName(row["trafficPath"]),
 		)
@@ -142,7 +142,7 @@ func prettyPrintQuery(logger *slog.Logger, logs []map[string]string, interfaces 
 
 		table.AddRow(
 			query.ToTime(row["@timestamp"]), row["interfaceId"], niType, name, flow.NiAddr, flow.NiPort, flow.Flow, flow.Addr, flow.Port, row["action"],
-			row["packets"], row["bytes"], query.ToProtocolKeyword(row["protocol"]),
+			row["packets"], row["bytes"], query.ProtocolFromNumberToKeyword(row["protocol"]),
 			strings.Join(query.ToTcpFlagNames(row["tcpFlags"]), ", "),
 			query.ToPathName(row["trafficPath"]),
 		)

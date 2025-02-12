@@ -77,7 +77,7 @@ func (q Query) Reject() Query {
 }
 
 func (q Query) Protocol(proto string) Query {
-	protoNumber := fromProtocol(proto)
+	protoNumber := protocolFromKeywordToNumber(proto)
 	// not found, query all protocols
 	if protoNumber < 0 {
 		return q

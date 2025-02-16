@@ -8,6 +8,15 @@ import (
 )
 
 func Select(label string, items []string) (int, string) {
+	if len(items) == 0 {
+		return -1, ""
+	}
+
+	// no need for prompt if there is only one item to chose from
+	if len(items) == 1 {
+		return 0, items[0]
+	}
+
 	p := promptui.Select{
 		Label: label,
 		Items: items,

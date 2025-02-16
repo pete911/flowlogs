@@ -16,8 +16,10 @@ func ToTcpFlagNames(in string) []string {
 	}
 
 	// When a flow log entry consists of only ACK packets, the flag value is 0, not 16 (see AWS docs)
+	// But it can be 0, also if no flags are sent, or flag is not supported by AWS flow logs. To be on the safe
+	// side, return 0.
 	if intVal == 0 {
-		return []string{"ACK"}
+		return []string{"0"}
 	}
 
 	// order is important, it is used to check TCP Flag bits

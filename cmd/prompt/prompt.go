@@ -7,6 +7,8 @@ import (
 	"strings"
 )
 
+var bold = promptui.Styler(promptui.FGBold)
+
 func Select(label string, items []string) (int, string) {
 	if len(items) == 0 {
 		return -1, ""
@@ -14,6 +16,8 @@ func Select(label string, items []string) (int, string) {
 
 	// no need for prompt if there is only one item to chose from
 	if len(items) == 1 {
+		// replicate prompt ui selected item
+		fmt.Printf("%s %s\n", bold(promptui.IconGood), bold(items[0]))
 		return 0, items[0]
 	}
 

@@ -72,6 +72,16 @@ Releases are published when the new tag is created e.g.
 CLI creates CloudWatch log group in the `/fl-cli/<id>` format. It also creates IAM role and flow log either per VPC, 
 subnet or ENI (when instance or sg argument is used). 
 
+Flowlogs can be also viewed in cloudwatch logs insights. Select appropriate log group `/fl-cli/...` and run example
+query (modify according to your needs - add/remove fields, add/remove filters etc.):
+```
+fields @timestamp, action, bytes, pktDstAddr, dstAddr, dstPort, flowDirection, packets, pktSrcAddr, srcAddr, srcPort, logStatus, protocol, trafficPath
+| filter logStatus != "NODATA"
+| filter logStatus != "SKIPDATA"
+| sort @timestamp desc
+| limit 1000
+```
+
 ### aws flow logs
 
 Flow logs are grouped by ENI. If the flow direction is ingress, destination address and destination port belong to the

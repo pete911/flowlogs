@@ -1,5 +1,8 @@
 # AWS Flow Logs
 
+> [!WARNING]  
+> If you installed previous versions (before `v0.0.8`) via brew, you need to reinstall (brew remove flowlogs && brew install flowlogs) to get updates
+
 Dynamically create or delete aws flow logs for EC2 instances, security groups, subnet or VPC.
 
 CLI creates AWS Flow Logs for specific group (EC2 instance(s) - grouped by the same name), security group, subnet or VPC).

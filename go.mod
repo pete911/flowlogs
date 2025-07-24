@@ -9,7 +9,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/ec2 v1.235.0
 	github.com/aws/aws-sdk-go-v2/service/iam v1.43.1
 	github.com/aws/aws-sdk-go-v2/service/sts v1.34.1
-	github.com/aws/smithy-go v1.22.4
+	github.com/aws/smithy-go v1.22.5
 	github.com/manifoldco/promptui v0.9.0
 	github.com/spf13/cobra v1.9.1
 )

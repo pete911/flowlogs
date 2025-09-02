@@ -11,7 +11,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/sts v1.38.2
 	github.com/aws/smithy-go v1.23.0
 	github.com/manifoldco/promptui v0.9.0
-	github.com/spf13/cobra v1.9.1
+	github.com/spf13/cobra v1.10.1
 )
 
 require (
@@ -27,6 +27,6 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/ssooidc v1.34.2 // indirect
 	github.com/chzyer/readline v1.5.1 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
-	github.com/spf13/pflag v1.0.6 // indirect
+	github.com/spf13/pflag v1.0.9 // indirect
 	golang.org/x/sys v0.33.0 // indirect
 )

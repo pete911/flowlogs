@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"github.com/pete911/flowlogs/cmd/endpoint"
 	"github.com/pete911/flowlogs/cmd/instance"
 	"github.com/pete911/flowlogs/cmd/nat"
 	"github.com/pete911/flowlogs/cmd/sg"
@@ -24,4 +25,5 @@ func init() {
 	Create.AddCommand(sg.Create)
 	Create.AddCommand(subnet.Create)
 	Create.AddCommand(vpc.Create)
+	Create.AddCommand(endpoint.Create)
 }

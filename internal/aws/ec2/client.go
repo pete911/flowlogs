@@ -4,14 +4,15 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log/slog"
+	"strings"
+	"time"
+
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/ec2"
 	"github.com/aws/aws-sdk-go-v2/service/ec2/types"
 	"github.com/aws/smithy-go"
 	"github.com/pete911/flowlogs/internal/aws/query"
-	"log/slog"
-	"strings"
-	"time"
 )
 
 type Client struct {
@@ -108,6 +109,46 @@ func (c Client) CreateSubnetFlowLogs(subnet Subnet, logGroupName string, roleArn
 	in := createFlowLogsInput{
 		resourceType: types.FlowLogsResourceTypeSubnet,
 		resourceIds:  []string{subnet.Id},
+		logGroupName: logGroupName,
+		roleArn:      roleArn,
+		tags:         tags,
+	}
+	return c.createFlowLogsV2V7(in)
+}
+
+func (c Client) ListVPCEndpoints() (VPCEndpoints, error) {
+	filters := []types.Filter{
+		{Name: aws.String("vpc-endpoint-state"), Values: []string{"available"}},
+		{Name: aws.String("vpc-endpoint-type"), Values: []string{"Interface"}},
+	}
+	return c.listVPCEndpoints(filters)
+}
+
+func (c Client) listVPCEndpoints(filters []types.Filter) (VPCEndpoints, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	in := &ec2.DescribeVpcEndpointsInput{Filters: filters}
+
+	var endpoints VPCEndpoints
+	for {
+		out, err := c.svc.DescribeVpcEndpoints(ctx, in)
+		if err != nil {
+			return nil, err
+		}
+		endpoints = append(endpoints, toVPCEndpoints(out.VpcEndpoints)...)
+		if aws.ToString(out.NextToken) == "" {
+			break
+		}
+		in.NextToken = out.NextToken
+	}
+	return endpoints, nil
+}
+
+func (c Client) CreateVPCEndpointFlowLogs(endpoint VPCEndpoint, logGroupName string, roleArn string, tags map[string]string) error {
+	in := createFlowLogsInput{
+		resourceType: types.FlowLogsResourceTypeNetworkInterface,
+		resourceIds:  endpoint.NetworkInterfaceIds,
 		logGroupName: logGroupName,
 		roleArn:      roleArn,
 		tags:         tags,

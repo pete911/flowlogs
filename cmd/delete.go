@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"github.com/pete911/flowlogs/cmd/all"
+	"github.com/pete911/flowlogs/cmd/endpoint"
 	"github.com/pete911/flowlogs/cmd/instance"
 	"github.com/pete911/flowlogs/cmd/nat"
 	"github.com/pete911/flowlogs/cmd/sg"
@@ -26,4 +27,5 @@ func init() {
 	Delete.AddCommand(sg.Delete)
 	Delete.AddCommand(subnet.Delete)
 	Delete.AddCommand(vpc.Delete)
+	Delete.AddCommand(endpoint.Delete)
 }

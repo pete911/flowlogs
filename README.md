@@ -14,10 +14,10 @@ by select log group with `/fl-cli/` prefix.
 
 If you have multiple accounts you need to prefix command with `AWS_PROFILE=<your profile> flowlogs ...`.
 
-- create `flowlogs create <instance|sg|subnet|vpc|nat>`
+- create `flowlogs create <instance|sg|subnet|vpc|nat|endpoint>`
 - list `flowlogs list` flowlogs created by this cli
-- delete `flowlogs delete <instance|sg|subnet|vpc|nat|all>` (use all argument to clean up all flowlogs)
-- query `flowlogs query <instance|sg|subnet|vpc|nat>`
+- delete `flowlogs delete <instance|sg|subnet|vpc|nat|endpoint|all>` (use all argument to clean up all flowlogs)
+- query `flowlogs query <instance|sg|subnet|vpc|nat|endpoint>`
 
 ```
 flowlogs create vpc

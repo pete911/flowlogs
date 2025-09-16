@@ -2,6 +2,10 @@ package cmd
 
 import (
 	"fmt"
+	"log/slog"
+	"os"
+	"strings"
+
 	"github.com/pete911/flowlogs/cmd/flag"
 	"github.com/pete911/flowlogs/cmd/out"
 	"github.com/pete911/flowlogs/cmd/prompt"
@@ -9,9 +13,6 @@ import (
 	"github.com/pete911/flowlogs/internal/aws/ec2"
 	"github.com/pete911/flowlogs/internal/aws/query"
 	"github.com/spf13/cobra"
-	"log/slog"
-	"os"
-	"strings"
 )
 
 var (
@@ -60,6 +61,14 @@ var (
 		Long:    "",
 		Run:     runQuery,
 	}
+
+	QueryVPCEndpoint = &cobra.Command{
+		Use:     "endpoint",
+		Aliases: []string{"endpoints", "vpc-endpoint", "vpc-endpoints"},
+		Short:   "query flow logs for vpc endpoint",
+		Long:    "",
+		Run:     runQuery,
+	}
 )
 
 func init() {
@@ -70,6 +79,7 @@ func init() {
 	Query.AddCommand(QuerySG)
 	Query.AddCommand(QuerySubnet)
 	Query.AddCommand(QueryVPC)
+	Query.AddCommand(QueryVPCEndpoint)
 }
 
 func runQuery(cmd *cobra.Command, _ []string) {
@@ -85,6 +95,8 @@ func runQuery(cmd *cobra.Command, _ []string) {
 		flowLogType = aws.FlowLogTypeSubnet
 	case "vpc":
 		flowLogType = aws.FlowLogTypeVPC
+	case "endpoint":
+		flowLogType = aws.FlowLogTypeVPCEndpoint
 	}
 
 	logger := flag.Global.Logger()

@@ -3,11 +3,12 @@ package aws
 import (
 	"errors"
 	"fmt"
+	"log/slog"
+
 	"github.com/pete911/flowlogs/internal/aws/ec2"
 	"github.com/pete911/flowlogs/internal/aws/iam"
 	"github.com/pete911/flowlogs/internal/aws/logs"
 	"github.com/pete911/flowlogs/internal/aws/query"
-	"log/slog"
 )
 
 type FlowLogType string
@@ -18,6 +19,7 @@ const (
 	FlowLogTypeNatGateway    FlowLogType = "nat-"
 	FlowLogTypeSubnet        FlowLogType = "subnet-"
 	FlowLogTypeVPC           FlowLogType = "vpc-"
+	FlowLogTypeVPCEndpoint   FlowLogType = "vpce-"
 	FlowLogTypeAll           FlowLogType = ""
 )
 
@@ -59,6 +61,24 @@ func (c Client) CreateVPCFlowLogs(vpc ec2.VPC) (string, error) {
 	}
 
 	if err := c.ec2client.CreateVPCFlowLogs(vpc, logGroupName, roleArn, tags); err != nil {
+		return "", err
+	}
+	c.logger.Info("flow logs created")
+	return logGroupName, err
+}
+
+func (c Client) ListVPCEndpoints() (ec2.VPCEndpoints, error) {
+	return c.ec2client.ListVPCEndpoints()
+}
+
+func (c Client) CreateVPCEndpointFlowLogs(endpoint ec2.VPCEndpoint) (string, error) {
+	tags := tagsFromId(endpoint.VpcEndpointId)
+	logGroupName, roleArn, err := c.createLogGroupAndRole(endpoint.VpcEndpointId, tags)
+	if err != nil {
+		return "", err
+	}
+
+	if err := c.ec2client.CreateVPCEndpointFlowLogs(endpoint, logGroupName, roleArn, tags); err != nil {
 		return "", err
 	}
 	c.logger.Info("flow logs created")

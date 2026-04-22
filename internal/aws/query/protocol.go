@@ -1,7 +1,6 @@
 package query
 
 import (
-	"fmt"
 	"strconv"
 	"strings"
 )
@@ -13,8 +12,11 @@ type protocol struct {
 }
 
 func protocolFromKeywordToNumber(in string) int {
+	if in == "" {
+		return -1
+	}
 	for k, v := range protocolByNumber {
-		if strings.ToLower(v.keyword) == strings.ToLower(in) {
+		if strings.EqualFold(v.keyword, in) {
 			return k
 		}
 	}
@@ -29,11 +31,10 @@ func ProtocolFromNumberToKeyword(in string) string {
 }
 
 func toProtocol(in string) protocol {
-	strVal := fmt.Sprintf("%s", in)
-	if strVal == "-" || strVal == "" {
+	if in == "-" || in == "" {
 		return protocol{}
 	}
-	intVal, err := strconv.Atoi(strVal)
+	intVal, err := strconv.Atoi(in)
 	if err != nil {
 		return protocol{}
 	}

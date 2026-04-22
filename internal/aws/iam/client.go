@@ -3,11 +3,12 @@ package iam
 import (
 	"context"
 	"fmt"
+	"log/slog"
+	"time"
+
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/iam"
 	"github.com/aws/aws-sdk-go-v2/service/iam/types"
-	"log/slog"
-	"time"
 )
 
 const (

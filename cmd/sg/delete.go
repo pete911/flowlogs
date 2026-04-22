@@ -2,11 +2,12 @@ package sg
 
 import (
 	"fmt"
+	"os"
+
 	"github.com/pete911/flowlogs/cmd/flag"
 	"github.com/pete911/flowlogs/cmd/prompt"
 	"github.com/pete911/flowlogs/internal/aws"
 	"github.com/spf13/cobra"
-	"os"
 )
 
 var (

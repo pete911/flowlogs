@@ -8,7 +8,7 @@ import (
 type FlowLogFields []string
 
 func (f FlowLogFields) Format() string {
-	var logFormat []string
+	logFormat := make([]string, 0, len(f))
 	for _, v := range f {
 		logFormat = append(logFormat, fmt.Sprintf("${%s}", v))
 	}

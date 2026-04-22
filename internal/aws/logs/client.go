@@ -3,11 +3,12 @@ package logs
 import (
 	"context"
 	"fmt"
+	"log/slog"
+	"time"
+
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/cloudwatchlogs"
 	"github.com/aws/aws-sdk-go-v2/service/cloudwatchlogs/types"
-	"log/slog"
-	"time"
 )
 
 const retentionDays = 30

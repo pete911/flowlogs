@@ -2,9 +2,10 @@ package prompt
 
 import (
 	"fmt"
+	"os"
+
 	"github.com/pete911/flowlogs/internal/aws"
 	"github.com/pete911/flowlogs/internal/aws/ec2"
-	"os"
 )
 
 func ListVPCs(client aws.Client) ec2.VPCs {

@@ -2,9 +2,10 @@ package prompt
 
 import (
 	"fmt"
+	"os"
+
 	"github.com/pete911/flowlogs/internal/aws"
 	"github.com/pete911/flowlogs/internal/aws/ec2"
-	"os"
 )
 
 func ListFlowLogs(client aws.Client, flowLogType aws.FlowLogType) ec2.FlowLogs {

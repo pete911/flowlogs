@@ -2,12 +2,13 @@ package flag
 
 import (
 	"fmt"
-	cfg "github.com/pete911/flowlogs/internal/aws"
-	"github.com/spf13/cobra"
 	"log/slog"
 	"os"
 	"strconv"
 	"strings"
+
+	"github.com/pete911/flowlogs/internal/aws"
+	"github.com/spf13/cobra"
 )
 
 var (
@@ -31,8 +32,8 @@ func (f Flags) Logger() *slog.Logger {
 	return nil
 }
 
-func (f Flags) AWSConfig() cfg.Config {
-	cfg, err := cfg.NewConfig(f.Region)
+func (f Flags) AWSConfig() aws.Config {
+	cfg, err := aws.NewConfig(f.Region)
 	if err != nil {
 		fmt.Printf("new aws config: %v\n", err)
 		os.Exit(1)

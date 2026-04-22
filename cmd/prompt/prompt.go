@@ -2,9 +2,10 @@ package prompt
 
 import (
 	"fmt"
-	"github.com/manifoldco/promptui"
 	"os"
 	"strings"
+
+	"github.com/manifoldco/promptui"
 )
 
 var bold = promptui.Styler(promptui.FGBold)

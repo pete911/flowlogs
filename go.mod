@@ -6,7 +6,7 @@ require (
 	github.com/aws/aws-sdk-go-v2 v1.43.6
 	github.com/aws/aws-sdk-go-v2/config v1.32.37
 	github.com/aws/aws-sdk-go-v2/service/cloudwatchlogs v1.82.2
-	github.com/aws/aws-sdk-go-v2/service/ec2 v1.321.2
+	github.com/aws/aws-sdk-go-v2/service/ec2 v1.321.3
 	github.com/aws/aws-sdk-go-v2/service/iam v1.59.1
 	github.com/aws/aws-sdk-go-v2/service/sts v1.45.6
 	github.com/aws/smithy-go v1.27.8

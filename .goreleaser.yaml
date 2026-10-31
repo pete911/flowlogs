@@ -40,9 +40,8 @@ homebrew_casks:
     homepage: "https://github.com/pete911/flowlogs"
     description: "Create and view AWS FlowLogs."
     hooks:
-       post:
-         install: |
-           if OS.mac?
-             system_command "/usr/bin/xattr", args: ["-dr", "com.apple.quarantine", "#{staged_path}/flowlogs"]
-           end
-
+      post:
+        install_steps: |
+          on_macos do
+            run "/usr/bin/xattr", args: ["-dr", "com.apple.quarantine", "{{ .StagedPath }}/flowlogs"]
+          end
